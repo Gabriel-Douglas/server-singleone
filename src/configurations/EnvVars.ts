@@ -19,4 +19,10 @@ export default {
     secret: (process.env.JWT_SECRET ??  ''),
     exp: (process.env.COOKIE_EXP ?? ''), // exp at the same time as the cookie
   },
+  mysql:{
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    pwd: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE
+  }
 } as const;

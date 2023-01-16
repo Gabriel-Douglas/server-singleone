@@ -7,13 +7,16 @@ import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
 import BaseRouter from './routes/api';
+import LoginRouter from './routes/login'
+
 import logger from 'jet-logger';
 import EnvVars from '@configurations/EnvVars';
 import HttpStatusCodes from '@configurations/HttpStatusCodes';
 import { NodeEnvs } from '@declarations/enums';
 import { RouteError } from '@declarations/classes';
 
-import {pool} from './db/config';
+import {db} from './db/config'
+
 
 // **** Init express **** //
 
@@ -43,7 +46,7 @@ app.use(function (req, res, next) {
 // **** Set basic express settings **** //
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(EnvVars.cookieProps.secret));
 
 // Show routes called in console during development
@@ -61,6 +64,7 @@ if (EnvVars.nodeEnv === NodeEnvs.Production) {
 
 // Add APIs
 app.use('/api', BaseRouter);
+app.use('/login',LoginRouter)
 
 // Setup error handler
 app.use((
@@ -91,7 +95,7 @@ app.use(express.static(staticDir));
 
 // Nav to login pg by default
 app.get('/', (_: Request, res: Response) => {
-  res.sendFile('login.html', {root: viewsDir});
+  res.sendFile('login.html', { root: viewsDir });
 });
 
 // Redirect to login if not logged in.
@@ -100,19 +104,22 @@ app.get('/users', (req: Request, res: Response) => {
   if (!jwt) {
     res.redirect('/');
   } else {
-    res.sendFile('users.html', {root: viewsDir});
+    res.sendFile('users.html', { root: viewsDir });
   }
 });
 
-app.get('/home', async (req, res) => {
-  var sqlCursos = `SELECT * FROM luztol."CURSOS" WHERE "CATEGORIA" = '${req.query.categoria}'`
-  var cursos = await pool.query(sqlCursos);
-  res.status(200).json(cursos.rows)
+app.get('/cursos', async (req, res) => {
+  var sqlCursos = `SELECT * FROM cursos WHERE CATEGORIA = '${req.query.categoria}'`
 
-  // pool.query(sqlCursos,(error,results)=>{
-  //   if(error) throw error;
-  //   res.status(200).json(results.rows)
-  // })
+  const mysql = await db();
+  
+    try {
+      const [cursos] = await mysql.query(sqlCursos)
+      res.status(200).json(cursos)
+    } catch (error) {
+      console.log(error)
+      mysql.end();
+    }
 })
 
 // **** Export default **** //
