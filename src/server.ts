@@ -125,6 +125,7 @@ app.get('/categorias', async (req, res) => {
     }
 })
 
+
 // **** Export default **** //
 
 export default app;
