@@ -3,11 +3,16 @@ import morgan from 'morgan';
 import path from 'path';
 import helmet from 'helmet';
 import express, { Request, Response, NextFunction } from 'express';
+var cors = require('cors')
 
 import 'express-async-errors';
 
 import BaseRouter from './routes/api';
-import LoginRouter from './routes/login'
+import LoginRouter from './routes/login';
+import UsersRouter from './routes/usuarios';
+import CursosRouter from './routes/cursos';
+import UploadCurso from './routes/upload';
+import SaladeAula from './routes/aula';
 
 import logger from 'jet-logger';
 import EnvVars from '@configurations/EnvVars';
@@ -21,27 +26,7 @@ import {db} from './db/config'
 // **** Init express **** //
 
 const app = express();
-
-// Add headers before the routes are defined
-app.use(function (req, res, next) {
-
-  // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  // Request methods you wish to allow
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-  // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  res.setHeader('Access-Control-Allow-Credentials', "true");
-
-  // Pass to next layer of middleware
-  next();
-});
-
+app.use(cors())
 
 // **** Set basic express settings **** //
 
@@ -59,12 +44,15 @@ if (EnvVars.nodeEnv === NodeEnvs.Production) {
   app.use(helmet());
 }
 
-
 // **** Add API routes **** //
 
 // Add APIs
 app.use('/api', BaseRouter);
-app.use('/login',LoginRouter)
+app.use('/login',LoginRouter);
+app.use('/users',UsersRouter);
+app.use('/cursos',CursosRouter);
+app.use('/upload',UploadCurso);
+app.use('/saladeaula',SaladeAula);
 
 // Setup error handler
 app.use((
@@ -82,7 +70,6 @@ app.use((
   return res.status(status).json({ error: err.message });
 });
 
-
 // **** Serve front-end content **** //
 
 // Set views directory (html)
@@ -93,20 +80,20 @@ app.set('views', viewsDir);
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 
-// Nav to login pg by default
-app.get('/', (_: Request, res: Response) => {
-  res.sendFile('login.html', { root: viewsDir });
-});
+// // Nav to login pg by default
+// app.get('/', (_: Request, res: Response) => {
+//   res.sendFile('login.html', { root: viewsDir });
+// });
 
-// Redirect to login if not logged in.
-app.get('/users', (req: Request, res: Response) => {
-  const jwt = req.signedCookies[EnvVars.cookieProps.key];
-  if (!jwt) {
-    res.redirect('/');
-  } else {
-    res.sendFile('users.html', { root: viewsDir });
-  }
-});
+// // Redirect to login if not logged in.
+// app.get('/users', (req: Request, res: Response) => {
+//   const jwt = req.signedCookies[EnvVars.cookieProps.key];
+//   if (!jwt) {
+//     res.redirect('/');
+//   } else {
+//     res.sendFile('users.html', { root: viewsDir });
+//   }
+// });
 
 app.get('/cursos', async (req, res) => {
   var sqlCursos = `SELECT * FROM cursos WHERE CATEGORIA = '${req.query.categoria}'`
@@ -115,7 +102,23 @@ app.get('/cursos', async (req, res) => {
   
     try {
       const [cursos] = await mysql.query(sqlCursos)
+      mysql.end();
       res.status(200).json(cursos)
+    } catch (error) {
+      console.log(error)
+      mysql.end();
+    }
+})
+
+app.get('/categorias', async (req, res) => {
+  var sqlCursos = `SELECT * FROM categorias`
+
+  const mysql = await db();
+  
+    try {
+      const [categorias] = await mysql.query(sqlCursos)
+      mysql.end();
+      res.status(200).json(categorias)
     } catch (error) {
       console.log(error)
       mysql.end();
