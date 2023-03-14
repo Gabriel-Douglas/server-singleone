@@ -26,7 +26,20 @@ import {db} from './db/config'
 // **** Init express **** //
 
 const app = express();
-app.use(cors())
+
+app.use(cors({
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}))
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*"); // update to match 
+  // the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+  });
 
 // **** Set basic express settings **** //
 
@@ -45,14 +58,13 @@ if (EnvVars.nodeEnv === NodeEnvs.Production) {
 }
 
 // **** Add API routes **** //
-
 // Add APIs
-app.use('/api', BaseRouter);
-app.use('/login',LoginRouter);
-app.use('/users',UsersRouter);
-app.use('/cursos',CursosRouter);
-app.use('/upload',UploadCurso);
-app.use('/saladeaula',SaladeAula);
+app.use('/api',BaseRouter);
+app.use('/login', LoginRouter);
+app.use('/users', UsersRouter);
+app.use('/cursos', CursosRouter);
+app.use('/upload', UploadCurso);
+app.use('/saladeaula', SaladeAula);
 
 // Setup error handler
 app.use((
