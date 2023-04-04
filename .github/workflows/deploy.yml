@@ -15,8 +15,8 @@ jobs:
       uses: easingthemes/ssh-deploy@main
       env:
         SSH_PRIVATE_KEY: ${{secrets.EC2_SSH_KEY}}
-        SOURCE: "../"
+        SOURCE: "/"
         REMOTE_HOST: ${{secrets.REMOTE_HOST}}
         REMOTE_USER: ${{secrets.REMOTE_USER}}
         TARGET: ${{secrets.TARGET_DIR}}
-        EXCLUDE: "../node_modules/"
+        EXCLUDE: "/node_modules/"
