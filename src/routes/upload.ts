@@ -6,7 +6,7 @@ import { db } from '../db/config';
 
 const apiUpload = Router();
 
-const pathStorage = 'C:/Users/gabriel.douglas/Backup/Luztol/luztol/public/images';
+const pathStorage = 'public/images';
 
 // Middleware para tratamento de erros
 const handleError = (err: Error, res: Response, next: NextFunction) => {
