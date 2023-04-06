@@ -6,7 +6,7 @@ import { db } from '../db/config';
 
 const apiUpload = Router();
 
-const pathStorage = '/efs/singleoneeducation/capa/';
+const pathStorage = '/efs/singleoneeducation/capas/';
 
 // Middleware para tratamento de erros
 const handleError = (err: Error, res: Response, next: NextFunction) => {
